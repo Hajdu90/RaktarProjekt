@@ -1,55 +1,57 @@
 package org.example.raktar;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
+        Raktar raktar = new Raktar();
+
         try {
-            Raktar raktar = new Raktar();
 
 
             Konzerv k1 = new Konzerv("Babfőzelék", "Globus", LocalDate.now().plusMonths(6), "Finom főzelék", "recept.txt");
-
             Konzerv k2 = new Konzerv("Lencse", "Bonduelele", "Lencse konzerv");
-
-            Konzerv k3 = new Konzerv("Kukorica", "Globus", LocalDate.of(2026, 1, 19), "Édes kukorica");
+            Konzerv k3 = new Konzerv("Kukorica", "Globus", LocalDate.of(2028, 1, 19), "Édes kukorica");
 
             raktar.felvesz(k1);
             raktar.felvesz(k2);
             raktar.felvesz(k3);
 
 
-            try {
-                Konzerv lejart = new Konzerv("Romlott Hús", "Senki", LocalDate.of(2000, 1, 1), "Ez már rossz");
-            } catch (LejartElelmiszerException e) {
-                System.out.println("Hiba elkapva: " + e.getMessage());
-            }
-
-            System.out.println("--- Raktár tartalma (Eredeti sorrend) ---");
-            for (Elelmiszer e : raktar) {
-                System.out.println(e);
-            }
-
-
-            System.out.println("\n--- Rendezve NÉV szerint ---");
-            List<Elelmiszer> lista = new ArrayList<>(raktar.getElelmiszerek());
-            Collections.sort(lista);
-            for (Elelmiszer e : lista) {
-                System.out.println(e);
-            }
-
-
-            System.out.println("\n-- Rendezve GYÁRTÓ szerint ---");
-            Collections.sort(lista, Elelmiszer.GyartoComparator);
-            for (Elelmiszer e : lista) {
-                System.out.println(e);
-            }
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+
+
+        System.out.println("--- Mentés folyamatban... ---");
+
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("raktar.bin"))) {
+            oos.writeObject(raktar);
+            System.out.println("Sikeres mentés a raktar.bin fájlba.");
+        } catch (Exception e) {
+            System.err.println("Hiba a mentés során: " + e.getMessage());
+        }
+
+        System.out.println("\n--- Visszaolvasás folyamatban... ---");
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("raktar.bin"))) {
+            Raktar visszatoltott = (Raktar) ois.readObject();
+
+            System.out.println("Visszatöltött raktár tartalma:");
+            for (Elelmiszer e : visszatoltott) {
+                System.out.println(e);
+            }
+        } catch (Exception e) {
+            System.err.println("Hiba a visszaolvasás során: " + e.getMessage());
         }
     }
 }
